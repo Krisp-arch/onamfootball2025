@@ -42,23 +42,37 @@ const HomePage = ({ onNavigate }) => {
               <img 
                 src={tournamentLogo} 
                 alt="Chapter One Tournament Logo" 
-                className="w-32 h-32 mx-auto mb-4 animate-float"
+                className="w-32 h-32 mx-auto mb-2 animate-float"
               />
             </motion.div>
             
-            <motion.h1 variants={fadeInUp} className="text-3xl md:text-5xl font-bold mb-4">
-              <span className="text-yellow-400"> ONAM SPECIAL </span> 
+            <motion.h1 variants={fadeInUp} className="text-3xl md:text-5xl font-bold mb-2">
+              <span className="text-yellow-400"> RAGE Premier 7s Malayalee Cup </span> 
             </motion.h1>
-            <motion.h2 variants={fadeInUp} className="text-2xl md:text-3xl font-bold mb-6">
-              FOOTBALL TOURNAMENT 2025
+            <motion.h2 variants={fadeInUp} className="text-2xl md:text-3xl font-bold mb-2">
+              Feel the Onam spirit. Fuel your football passion!
             </motion.h2>
             
-            <motion.div variants={fadeInUp} className="mb-8">
+            <motion.div variants={fadeInUp} className="mb-8" >
              
-              <p className="text-xl md:text-1xl mb-2">ORGANISED BY RAGE FOOTBALL CLUB AND ACADEMY</p>
+             	<p className="text-xl md:text-1xl mb-2 hidden" >ORGANISED BY RAGE FOOTBALL CLUB AND ACADEMY</p> 
 			  
-              <p className="text-sm md:text-sm opacity-90">This September - A celebration of Kerala's spirit. A Tournament of passion. </p>
-			  <p className="text-sm md:text-sm opacity-90"> Exclusively for Malayali players Studying or Working in Hyderabad</p>
+              <p className="text-sm md:text-sm opacity-90 mb-4">
+			  <span className="text-yellow-400">
+			  Reignite the cherished flame of Kerala’s football soul<br />where every kick echoes the deep love we carry in our hearts,<br /> bridging the distance and bringing home the passion we’ve long missed.
+				</span>
+				</p>
+			  
+			  <p className="text-sm md:text-sm opacity-90 mb-2 "> Team up or register solo — passion knows no limits.
+			  </p>
+			  <p className="text-sm md:text-sm opacity-90 mb-2"> 
+				Dates: Sept 13, 14, 20 & 28
+				</p>
+			  <p className="text-sm md:text-sm opacity-90 mb-2"> 
+				Register: Team (7+3) ₹5000 | Individual ₹750
+			</p>
+			  <p className="text-sm md:text-sm opacity-90 mb-2"> 
+				Win ₹25,000 + trophies & medals; Runners-up ₹15,000 + trophies & medals.</p>
             </motion.div>
 
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -142,7 +156,7 @@ const HomePage = ({ onNavigate }) => {
                 <CardTitle>Tournament Overview</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">Dates: September 13, 14, 20 & 21 </p>
+                <p className="text-gray-600">Dates: September 13, 14, 20 & 28 </p>
 				<p className="text-gray-600">(Weekends only)</p>
                 <p className="text-sm text-gray-500 mt-2">Venue: A2Z Ground. Tellapur.</p>
 				<p className="text-sm text-gray-500 mt-2">Hosted by: RAGE football Academy to bring Kerala's spirit alive in Hyderabad </p>

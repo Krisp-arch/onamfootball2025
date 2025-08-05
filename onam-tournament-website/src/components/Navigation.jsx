@@ -41,7 +41,7 @@ const Navigation = ({ currentPage, onNavigate }) => {
             />
             <div className="flex flex-col">
               <h1 className="text-sm sm:text-base md:text-lg lg:text-lg font-bold text-gray-900 leading-tight">
-                Onam Special Football Tournament
+                Rage Premier 7s Malayalee Cup
               </h1>
               <p className="text-xs  text-gray-600 leading-tight">
                 CHAPTER ONE 2025

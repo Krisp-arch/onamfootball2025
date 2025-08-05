@@ -1,6 +1,7 @@
 /* HomePage specific styles */
 .hero-section {
   /*background: linear-gradient(135deg, #1E40AF 0%, #1F2937 50%, #FFD700 100%); */
+  /*background: url('../assets/homebg-option.png')*/
   background: url('../assets/Onam-BG.png')
   center/cover no-repeat;
   position: relative;
@@ -14,7 +15,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: url('../assets/KI7WxsjHVYsK.jpg') center/cover;
+  /*background: url('../assets/KI7WxsjHVYsK.jpg') center/cover;*/
   opacity: 0.1;
   z-index: 1;
 }
