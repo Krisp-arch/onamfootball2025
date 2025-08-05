@@ -1,7 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 import json
 import os
-import cgi
+import requests
 from datetime import datetime
 
 class handler(BaseHTTPRequestHandler):
@@ -9,12 +9,11 @@ class handler(BaseHTTPRequestHandler):
         try:
             # Check admin authentication
             auth_header = self.headers.get('Authorization')
-            if not auth_header or auth_header != 'Bearer admin_token_placeholder':
+            if not auth_header or not auth_header.startswith('Bearer '):
                 self.send_response(401)
-                self.send_header('Access-Control-Allow-Origin', '*')
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                error_response = json.dumps({'error': 'Unauthorized'})
+                error_response = json.dumps({'error': 'Admin authentication required'})
                 self.wfile.write(error_response.encode('utf-8'))
                 return
             
@@ -25,30 +24,19 @@ class handler(BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             
-            # For now, just return success - implement blob upload later
-            photo_data = {
-                'id': int(datetime.now().timestamp()),
-                'url': '/static/images/uploaded_photo.jpg',
-                'title': 'Uploaded Photo',
-                'description': 'Successfully uploaded photo',
-                'category': 'tournament',
-                'date': datetime.now().strftime('%Y-%m-%d'),
-                'tags': ['uploaded', 'photo'],
-                'size': 1024000
-            }
-            
-            response_data = json.dumps({
-                'message': 'Photo uploaded successfully',
-                'photo': photo_data
+            # For now, return success (implement actual upload later)
+            response = json.dumps({
+                'message': 'Photo upload feature coming soon',
+                'status': 'success'
             })
-            self.wfile.write(response_data.encode('utf-8'))
+            self.wfile.write(response.encode('utf-8'))
             
         except Exception as e:
             print(f"Upload error: {e}")
             self.send_response(500)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            error_response = json.dumps({'error': f'Upload failed: {str(e)}'})
+            error_response = json.dumps({'error': 'Upload failed'})
             self.wfile.write(error_response.encode('utf-8'))
     
     def do_OPTIONS(self):
