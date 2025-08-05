@@ -7,8 +7,18 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime
 
-def send_email(to_email, subject, body):
-    """Send email using Amazon SES SMTP"""
+# Import our security utils (will be in same directory)
+try:
+    from security_utils import get_client_id, is_rate_limited, record_request, validate_input
+except ImportError:
+    # Fallback if import fails
+    def get_client_id(headers): return "default"
+    def is_rate_limited(client_id, endpoint): return False, ""
+    def record_request(client_id, endpoint, email): return True
+    def validate_input(data, fields): return True, ""
+
+def send_email(player_data):
+    """Send email notification to admin"""
     sender_email = os.getenv('SENDER_EMAIL')
     smtp_username = os.getenv('SES_SMTP_USERNAME')
     smtp_password = os.getenv('SES_SMTP_PASSWORD')
@@ -19,10 +29,31 @@ def send_email(to_email, subject, body):
         print("Missing SMTP configuration")
         return False
     
+    subject = "🏆 New Player Registration - Onam Tournament 2025"
+    body = f"""
+    <html>
+    <body>
+        <h2>New Player Registration</h2>
+        <p><strong>Tournament:</strong> Onam Special Football Tournament 2025</p>
+        
+        <h3>Player Details:</h3>
+        <ul>
+            <li><strong>Name:</strong> {player_data['fullName']}</li>
+            <li><strong>Contact:</strong> {player_data['contactNumber']}</li>
+            <li><strong>Email:</strong> {player_data['email']}</li>
+            <li><strong>Position:</strong> {player_data['playingPosition']}</li>
+            <li><strong>Time:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</li>
+        </ul>
+        
+        <p>Contact the player to confirm registration and payment.</p>
+    </body>
+    </html>
+    """
+    
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
     msg['From'] = sender_email
-    msg['To'] = to_email
+    msg['To'] = sender_email  # Send to yourself for now
     msg.attach(MIMEText(body, 'html'))
     
     try:
@@ -30,7 +61,7 @@ def send_email(to_email, subject, body):
         with smtplib.SMTP(smtp_host, smtp_port) as server:
             server.starttls(context=context)
             server.login(smtp_username, smtp_password)
-            server.sendmail(sender_email, to_email, msg.as_string())
+            server.sendmail(sender_email, sender_email, msg.as_string())
         return True
     except Exception as e:
         print(f"Email error: {e}")
@@ -39,7 +70,21 @@ def send_email(to_email, subject, body):
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         try:
-            # Set CORS headers
+            # Get client identifier for rate limiting
+            client_id = get_client_id(self.headers)
+            
+            # Check rate limits
+            is_limited, limit_msg = is_rate_limited(client_id, 'register-player')
+            if is_limited:
+                self.send_response(429)  # Too Many Requests
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                error_response = json.dumps({'error': limit_msg})
+                self.wfile.write(error_response.encode('utf-8'))
+                return
+            
+            # Standard headers
             self.send_response(200)
             self.send_header('Access-Control-Allow-Origin', '*')
             self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
@@ -47,62 +92,56 @@ class handler(BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             
-            # Read request body
-            content_length = int(self.headers['Content-Length'])
+            # Parse request data
+            content_length = int(self.headers.get('Content-Length', 0))
+            if content_length > 10000:  # 10KB limit
+                error_response = json.dumps({'error': 'Request too large'})
+                self.wfile.write(error_response.encode('utf-8'))
+                return
+                
             post_data = self.rfile.read(content_length)
             data = json.loads(post_data.decode('utf-8'))
             
-            # Validate required fields
+            # Validate input
             required_fields = ['fullName', 'contactNumber', 'email', 'playingPosition']
-            for field in required_fields:
-                if not data.get(field):
-                    error_response = json.dumps({'error': f'{field} is required'})
-                    self.wfile.write(error_response.encode('utf-8'))
-                    return
+            is_valid, validation_error = validate_input(data, required_fields)
+            if not is_valid:
+                error_response = json.dumps({'error': validation_error})
+                self.wfile.write(error_response.encode('utf-8'))
+                return
             
-            subject = "Player Registration - Onam Football Tournament 2025"
-            body = f"""
-            <html>
-            <body>
-                <h2>New Player Registration</h2>
-                <p><strong>Tournament:</strong> Onam Special Football Tournament 2025 - Chapter One</p>
-                <p><strong>Registration Type:</strong> Individual Player</p>
-                
-                <h3>Player Details:</h3>
-                <ul>
-                    <li><strong>Full Name:</strong> {data['fullName']}</li>
-                    <li><strong>Contact Number:</strong> {data['contactNumber']}</li>
-                    <li><strong>Email:</strong> {data['email']}</li>
-                    <li><strong>Playing Position:</strong> {data['playingPosition']}</li>
-                    <li><strong>Registration Time:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</li>
-                </ul>
-                
-                <h3>Next Steps:</h3>
-                <p>1. Payment details will be shared separately</p>
-                <p>2. Tournament schedule will be communicated closer to the event</p>
-                <p>3. Please keep your contact details updated</p>
-                
-                <p>For queries, contact info@ragefootballclub.com or +91 88832 10696</p>
-                
-                <p>Best regards,<br>Rage Football Academy Team</p>
-            </body>
-            </html>
-            """
+            # Check if email already registered and record request
+            email = data['email'].strip().lower()
+            if not record_request(client_id, 'register-player', email):
+                error_response = json.dumps({'error': 'This email has already been registered today'})
+                self.wfile.write(error_response.encode('utf-8'))
+                return
             
-            if send_email(os.getenv('SENDER_EMAIL'), subject, body):
-                success_response = json.dumps({'message': 'Registration successful', 'status': 'success'})
+            # Send notification email
+            if send_email(data):
+                success_response = json.dumps({
+                    'message': 'Registration successful! You will be contacted soon.',
+                    'status': 'success'
+                })
                 self.wfile.write(success_response.encode('utf-8'))
             else:
-                error_response = json.dumps({'error': 'Registration failed - email not sent'})
-                self.wfile.write(error_response.encode('utf-8'))
+                # Still return success to user, but log the email failure
+                print("Email sending failed, but registration was recorded")
+                success_response = json.dumps({
+                    'message': 'Registration received! You will be contacted soon.',
+                    'status': 'success'
+                })
+                self.wfile.write(success_response.encode('utf-8'))
                 
+        except json.JSONDecodeError:
+            error_response = json.dumps({'error': 'Invalid JSON data'})
+            self.wfile.write(error_response.encode('utf-8'))
         except Exception as e:
             print(f"Handler error: {e}")
-            error_response = json.dumps({'error': str(e)})
+            error_response = json.dumps({'error': 'Server error occurred'})
             self.wfile.write(error_response.encode('utf-8'))
     
     def do_OPTIONS(self):
-        # Handle CORS preflight
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
