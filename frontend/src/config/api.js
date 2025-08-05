@@ -1,6 +1,4 @@
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? '' // Same domain in production
-  : 'http://localhost:5000'; // Local Flask dev server
+const API_BASE_URL = 'https://onamfootball2025-api.vercel.app';
 
 export const API_ENDPOINTS = {
   REGISTER_PLAYER: `${API_BASE_URL}/api/register-player`,
