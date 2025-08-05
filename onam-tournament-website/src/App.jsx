@@ -9,7 +9,7 @@ import './App.css';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
-  const isSorted = false; 
+  const isSorted = true; 
 
   const handleNavigation = (pageId) => {
     setCurrentPage(pageId);

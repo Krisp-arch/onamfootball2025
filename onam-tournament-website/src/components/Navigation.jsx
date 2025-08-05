@@ -4,7 +4,7 @@ import { Menu, X, Home, Users, Camera, Phone, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import tournamentLogo from '../assets/ragelogo2.webp';
 
-const isSorted = false; // Set to true when your storage is sorted
+const isSorted = true; // Set to true when your storage is sorted
 const Navigation = ({ currentPage, onNavigate }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 

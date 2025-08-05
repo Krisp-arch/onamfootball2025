@@ -1,12 +1,10 @@
-from flask import Flask, request, jsonify
+import json
 import smtplib
 import ssl
 import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime
-
-app = Flask(__name__)
 
 def send_email(to_email, subject, body):
     """Send email using Amazon SES SMTP"""
@@ -36,18 +34,27 @@ def send_email(to_email, subject, body):
         print(f"Email error: {e}")
         return False
 
-@app.route('/', methods=['POST'])
-def handler():
+def handler(request):
+    headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Content-Type': 'application/json'
+    }
+    
+    if request.method == 'OPTIONS':
+        return ('', 200, headers)
+    
     if request.method != 'POST':
-        return jsonify({'error': 'Method not allowed'}), 405
+        return (json.dumps({'error': 'Method not allowed'}), 405, headers)
     
     try:
-        data = request.get_json()
-        required_fields = ['teamName', 'captainName', 'captainContact', 'captainEmail']
+        data = json.loads(request.data.decode('utf-8'))
         
+        required_fields = ['teamName', 'captainName', 'captainContact', 'captainEmail']
         for field in required_fields:
             if not data.get(field):
-                return jsonify({'error': f'{field} is required'}), 400
+                return (json.dumps({'error': f'{field} is required'}), 400, headers)
         
         subject = "Team Registration - Onam Football Tournament 2025"
         body = f"""
@@ -82,12 +89,11 @@ def handler():
         """
         
         if send_email(os.getenv('SENDER_EMAIL'), subject, body):
-            return jsonify({'message': 'Registration successful', 'status': 'success'}), 200
+            return (json.dumps({'message': 'Registration successful', 'status': 'success'}), 200, headers)
         else:
-            return jsonify({'error': 'Registration failed - email not sent'}), 500
+            return (json.dumps({'error': 'Registration failed - email not sent'}), 500, headers)
             
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return (json.dumps({'error': str(e)}), 500, headers)
 
-if __name__ == '__main__':
-    app.run()
+app = handler
