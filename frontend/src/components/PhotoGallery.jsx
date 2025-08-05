@@ -9,6 +9,19 @@ import { Badge } from './ui/badge';
 import { Camera, Upload, Trash2, Edit, Eye, Lock, Unlock, Plus, X, Search, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import tournamentLogo from '../assets/logo400.png';
+import { API_ENDPOINTS } from '../config/api';
+
+// For fetching photos:
+const response = await fetch(API_ENDPOINTS.GALLERY_PHOTOS);
+
+// For admin login:
+const response = await fetch(API_ENDPOINTS.ADMIN_LOGIN, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ password: adminPassword })
+});
 
 const PhotoGallery = () => {
   const [photos, setPhotos] = useState([]);

@@ -1,0 +1,10 @@
+{
+  "name": "onamfootball2025-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd frontend && npm run build",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd api && python -m http.server 5000"
+  }
+}

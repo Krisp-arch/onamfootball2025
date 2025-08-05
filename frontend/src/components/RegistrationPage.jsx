@@ -12,6 +12,15 @@ import { User, Users, Building, Upload, Phone, Mail, FileText, Trophy, Heart, Ne
 import { motion } from 'framer-motion';
 import tournamentLogo from '../assets/logo400.png';
 import upiQR from '../assets/upi_qr.jpg';
+import { API_ENDPOINTS } from '../config/api';
+
+const response = await fetch(API_ENDPOINTS.REGISTER_PLAYER, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(playerForm)
+});
 
 const RegistrationPage = () => {
   const [playerForm, setPlayerForm] = useState({
